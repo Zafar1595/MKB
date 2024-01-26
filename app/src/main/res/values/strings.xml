@@ -1,0 +1,11 @@
+<resources>
+    <string name="app_name">МКБ</string>
+    <string name="name_ru">Название: </string>
+    <string name="name_uz">Название на узбекском: </string>
+    <string name="cod">Код: </string>
+    <string name="search">Поиск</string>
+    <string name="choose_text_size">Выберите размер шрифта</string>
+    <string name="small">Маленький</string>
+    <string name="midl">Средний</string>
+    <string name="large">Большой</string>
+</resources>
