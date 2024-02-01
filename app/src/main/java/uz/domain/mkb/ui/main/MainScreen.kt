@@ -16,16 +16,22 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
@@ -35,6 +41,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
 import uz.domain.mkb.R
 import uz.domain.mkb.models.Mkb
@@ -43,18 +50,43 @@ import uz.domain.mkb.ui.main.detail.DetailBottomSheet
 @Composable
 fun MainScreen() {
 
+    val fabVisible = remember { mutableStateOf(false) }
+    val lazyListState = rememberLazyListState()
+    val coroutineScope = rememberCoroutineScope()
+
     Scaffold(
         topBar = {
             TopBar()
         },
         content = { padding ->
-            Content(padding)
+            Content(padding, lazyListState) {
+                fabVisible.value = it
+            }
+        },
+        floatingActionButton = {
+            if (fabVisible.value) {
+                ExtendedFloatingActionButton(onClick = {
+                    coroutineScope.launch {
+                        lazyListState.animateScrollToItem(index = 0)
+                    }
+                }) {
+                    Image(
+                        painter = painterResource(id = R.drawable.baseline_arrow_upward_24),
+                        contentDescription = "Up"
+                    )
+                }
+            }
         }
     )
 }
 
 @Composable
-fun Content(padding: PaddingValues, viewModel: MainViewModel = koinViewModel<MainViewModel>()) {
+fun Content(
+    padding: PaddingValues,
+    lazyListState: LazyListState,
+    viewModel: MainViewModel = koinViewModel<MainViewModel>(),
+    scrollToTop: (visible: Boolean) -> Unit
+) {
     setDefaultTextSize(viewModel, LocalContext.current)
 
     val viewState = viewModel.mkbList.observeAsState()
@@ -64,13 +96,16 @@ fun Content(padding: PaddingValues, viewModel: MainViewModel = koinViewModel<Mai
     })
     val fontSize = viewModel.textSize.observeAsState()
 
-    LazyColumn(modifier = Modifier.padding(padding)) {
+    LazyColumn(modifier = Modifier.padding(padding), state = lazyListState) {
         viewState.value?.forEach {
             item {
                 ItemMkb(it, fontSize.value!!)
             }
         }
     }
+    val showScrollToTopButton =
+        remember { derivedStateOf { lazyListState.firstVisibleItemIndex > 0 } }
+    scrollToTop.invoke(showScrollToTopButton.value)
 
 }
 
