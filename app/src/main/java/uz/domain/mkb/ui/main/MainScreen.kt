@@ -20,6 +20,7 @@ import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ExtendedFloatingActionButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
@@ -39,6 +40,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.launch
@@ -96,7 +98,7 @@ fun Content(
     })
     val fontSize = viewModel.textSize.observeAsState()
 
-    LazyColumn(modifier = Modifier.padding(padding), state = lazyListState) {
+    LazyColumn(state = lazyListState, contentPadding = padding) {
         viewState.value?.forEach {
             item {
                 ItemMkb(it, fontSize.value!!)
@@ -188,6 +190,12 @@ fun ItemMkb(it: Mkb, fontSize: Int) {
     }
 }
 
+@Preview(showBackground = true)
+@Composable
+fun DefaultPreview() {
+    TopBar()
+}
+
 @Composable
 fun TopBar(viewModel: MainViewModel = koinViewModel<MainViewModel>()) {
 
@@ -202,8 +210,9 @@ fun TopBar(viewModel: MainViewModel = koinViewModel<MainViewModel>()) {
     val settingsClickState = remember { mutableStateOf(false) }
     Row(
         modifier = Modifier
-            .fillMaxWidth()
-            .padding(bottom = 8.dp)
+            .fillMaxWidth().padding(bottom = 4.dp)
+            .background(color = MaterialTheme.colorScheme.background),
+        verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
     ) {
         OutlinedTextField(
             value = text.value,
@@ -221,7 +230,7 @@ fun TopBar(viewModel: MainViewModel = koinViewModel<MainViewModel>()) {
             },
             modifier = Modifier
                 .weight(9f)
-                .padding(start = 16.dp, end = 8.dp, top = 8.dp, bottom = 8.dp),
+                .padding(start = 16.dp, end = 8.dp),
             singleLine = true,
             shape = RoundedCornerShape(7.5.dp),
             colors = OutlinedTextFieldDefaults.colors(
@@ -237,8 +246,7 @@ fun TopBar(viewModel: MainViewModel = koinViewModel<MainViewModel>()) {
             modifier = Modifier
                 .size(30.dp)
                 .weight(1.5f)
-                .padding(end = 16.dp)
-                .align(androidx.compose.ui.Alignment.CenterVertically)
+                .padding(end = 16.dp, top = 4.dp)
                 .clickable {
                     settingsClickState.value = true
                 }
